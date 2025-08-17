@@ -342,7 +342,7 @@ then
   install_nyarch_assistant
   echo "Nyarch Assistant installed!"
 fi 
-read -r -p "[SYSTEM] Do you want to install Nyarch Updater? It's going to have some issues outside of Nyarch and Arch in general (Y/n): " response
+read -r -p "[SYSTEM] ⚠️  Do you want to install Nyarch Updater? It's going to have some issues outside of Nyarch and Arch in general (Y/n) ⚠️ : " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
   install_nyarch_updater
