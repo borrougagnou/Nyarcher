@@ -191,32 +191,32 @@ install_nyarch_apps() {
   # Install latest release of CatgirlDownloader through flatpak bundle
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/CatgirlDownloader/releases/latest/download/catgirldownloader.flatpak
-  flatpak install catgirldownloader.flatpak
+  flatpak install catgirldownloader.flatpak --reinstall
 
   # Install latest release of NyarchWizard through flatpak bundle
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/NyarchWizard/releases/latest/download/wizard.flatpak
-  flatpak install wizard.flatpak
+  flatpak install --reinstall wizard.flatpak
 
   # Install latest release of NyarchTour through flatpak bundle
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/NyarchTour/releases/latest/download/nyarchtour.flatpak
-  flatpak install nyarchtour.flatpak
+  flatpak install --reinstall nyarchtour.flatpak
 
   # Install latest release of NyarchCustomize
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/NyarchCustomize/releases/latest/download/nyarchcustomize.flatpak
-  flatpak install nyarchcustomize.flatpak
+  flatpak install --reinstall nyarchcustomize.flatpak
  
   # Install Nyarch Scripts
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/NyarchScript/releases/latest/download/nyarchscript.flatpak
-  flatpak install nyarchscript.flatpak
+  flatpak install --reinstall nyarchscript.flatpak
 
   # Install Waifu Downloader
   cd ${TMP_FOLDER} 
   wget https://github.com/NyarchLinux/WaifuDownloader/releases/latest/download/waifudownloader.flatpak
-  flatpak install waifudownloader.flatpak
+  flatpak install --reinstall waifudownloader.flatpak
   
 }
 
@@ -224,14 +224,14 @@ install_nyarch_assistant() {
   # Install Nyarch Assistant
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/NyarchAssistant/releases/latest/download/nyarchassistant.flatpak
-  flatpak install nyarchassistant.flatpak
+  flatpak install --reinstall nyarchassistant.flatpak
 }
 
 install_nyarch_updater() {
   # Install Nyarch Updater
   cd ${TMP_FOLDER}
   wget https://github.com/NyarchLinux/NyarchUpdater/releases/latest/download/nyarchupdater.flatpak
-  flatpak install nyarchupdater.flatpak
+  flatpak install --reinstall nyarchupdater.flatpak
   sudo bash -c 'echo 20250801 > /version'
 }
 
