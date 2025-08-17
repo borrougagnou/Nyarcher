@@ -6,12 +6,26 @@ The script aims to give the most similar experience to Nyarch Linux on any Linux
 Also, some applications, specially Nyarch Scripts, might not work correctly in non arch based distributions.
 The only opeartions that are going to edit system files, are flagged with [SYSTEM]. They are not dangerous, but you better know that they are doing it.
 If something goes wrong, by creating a new user on your distribution, you won't be affected by the changes that the script does, excluding the changes made by part of the script flagged as [SYSTEM].
+
+## Test
+The installer has been tested on the following systems:
+
+|  **System**  | **Working** |         **Note**        |
+|:------------:|:-----------:|:-----------------------:|
+| Debian 12    |      ❌     | Gnome 43 not compatible |
+| Debian 13    |      ✅     |                         |
+| Ubuntu 22.04 |      ❌     | Gnome 46 not compatible |
+| Ubuntu 22.10 |      ✅     |                         |
+| Fedora 42    |      ✅     |                         |
+| ArchLinux    |             |                         |
+
 ## Install pre-requirements
 **On any distribution, a working installation of Gnome 47 is needed**
 
 ### Arch-based distributions
 ```bash
 sudo pacman -S curl python-pip flatpak gnome-menus kitty wget git fastfetch npm nodejs pacman-contrib gnome-menus gnome-shell-extensions tar
+sudo pacman -S cairo pkgconf
 sudo pacman -S python-pywal
 ```
 It is also suggested to install `webapp-manager` and `gnome-terminal-transparency` from the AUR.
@@ -19,14 +33,17 @@ It is also suggested to install `webapp-manager` and `gnome-terminal-transparenc
 ### Fedora based distributions
 ```bash
 sudo dnf install curl flatpak python3-pip svn gnome-menus kitty wget git fastfetch npm nodejs btop gnome-menus gnome-extensions-app
-sudo pip3 install pywal
+sudo dnf install gcc cairo-devel cairo-gobject-devel pkg-config python3-devel
+sudo pip3 install pywal16 --break-system-packages
 sudo cp /usr/local/bin/wal /usr/bin/wal
 ```
 NOTE: wal needs to be in /usr/bin/wal, this is the reason of the last command
 ### Ubuntu based distributions
 ```bash
-sudo apt install curl python3-pip flatpak subversion gnome-menus kitty wget git fastfetch npm nodejs btop gnome-menus gnome-shell-extension-prefs
-sudo pip3 install pywal
+sudo apt install curl python3-pip python3-venv pkg-config flatpak subversion gnome-menus kitty wget git fastfetch npm nodejs btop gnome-menus gnome-shell-extension-prefs
+sudo apt install libcairo2-dev pkg-config python3-dev libgirepository-2.0-dev gettext # For gnome extensions customization
+sudo pip3 install pywal16 --break-system-packages
+sudo cp /usr/local/bin/wal /usr/bin/wal
 ```
 ## Running the script 
 If you want to learn what the script does, you can read [NYARCHER.md](https://github.com/NyarchLinux/Nyarcher/blob/main/NYARCHER.md) file.

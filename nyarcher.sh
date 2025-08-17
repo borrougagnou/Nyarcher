@@ -3,7 +3,7 @@
 LATEST_TAG_VERSION=`curl -s https://api.github.com/repos/NyarchLinux/NyarchLinux/releases/latest | grep "tag_name" | awk -F'"' '/tag_name/ {print $4}'`
 RELEASE_LINK="https://github.com/NyarchLinux/NyarchLinux/releases/download/$LATEST_TAG_VERSION"
 TAG_PATH="https://raw.githubusercontent.com/NyarchLinux/NyarchLinux/refs/tags/$LATEST_TAG_VERSION/Gnome"
-TMP_FOLDER="/tmp/nyarchinstall"
+TMP_FOLDER="/tmp/nyarchinstall" ### PLEASE DO NOT USE /tmp !!
 DATE_TODAY=`date +"%Y%m%d-%H%M%S"`
 
 RED='\033[0;31m'
@@ -24,7 +24,7 @@ check_gnome_version() {
 }
 
 check_gnome_is_running() {
-  CURRENT_ENV=${XDG_CURRENT_DESKTOP,,}
+  local CURRENT_ENV=${XDG_CURRENT_DESKTOP,,}
   if [[ $CURRENT_ENV != *"gnome"* ]]; then
     echo "Gnome isn't running, please launch gnome environment first"
     exit
@@ -32,21 +32,22 @@ check_gnome_is_running() {
 }
 
 get_tarball() {
-    file_path=${TMP_FOLDER}/NyarchLinux.tar.gz
-    url=${RELEASE_LINK}/NyarchLinux.tar.gz
+    #just a tar archive, no gzip compression, wrong extention
+    local file_path=${TMP_FOLDER}/NyarchLinux.tar.gz
+    local url=${RELEASE_LINK}/NyarchLinux.tar.gz
 
     if [ ! -f "$file_path" ]; then
         echo "Downloading Nyarch tarball from $url"
         wget -q -O "$file_path" "$url"
         cd ${TMP_FOLDER}
-        tar -xvf ${TMP_FOLDER}/NyarchLinux.tar.gz
+        tar -xf ${TMP_FOLDER}/NyarchLinux.tar.gz
     else
         echo "Using cached Nyarch tarball"
     fi
 }
 
 install_extensions () {
-  GNOME_SHELL_FOLDER="$HOME/.local/share/gnome-shell"
+  local GNOME_SHELL_FOLDER="$HOME/.local/share/gnome-shell"
   check_gnome_version
   check_gnome_is_running
 
@@ -57,7 +58,8 @@ install_extensions () {
   fi
 
   get_tarball
-  cp -rf ${TMP_FOLDER}/NyarchLinux/Gnome/etc/skel/.local/share/gnome-shell/extensions ${GNOME_SHELL_FOLDER}
+  mkdir -p ${GNOME_SHELL_FOLDER}/extensions
+  cp -rf ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/skel/.local/share/gnome-shell/extensions ${GNOME_SHELL_FOLDER}
   
   # Install material you
   git clone https://github.com/FrancescoCaracciolo/material-you-colors.git ${TMP_FOLDER}/material-you-colors
@@ -66,14 +68,14 @@ install_extensions () {
   make install
   npm install --prefix ${GNOME_SHELL_FOLDER}/extensions/material-you-colors@francescocaracciolo.github.io;
 
+  rm -rf "${GNOME_SHELL_FOLDER}/extensions/material-you-colors@francescocaracciolo.github.io/adwaita-material-you" # if the folder exist
   git clone https://github.com/francescocaracciolo/adwaita-material-you "${GNOME_SHELL_FOLDER}/extensions/material-you-colors@francescocaracciolo.github.io/adwaita-material-you"
   cd "${GNOME_SHELL_FOLDER}/extensions/material-you-colors@francescocaracciolo.github.io/adwaita-material-you"
   bash local-install.sh
-  # Set correct permissions 
-  chmod -R 755 extensions/*
   
   # Install material you icons 
-  cp -rf ${TMP_FOLDER}/NyarchLinux/Gnome/etc/skel/.config/nyarch $HOME/.config
+  cp -rf ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/skel/.config/nyarch $HOME/.config
+  rm -rf $HOME/.config/nyarch/Tela-circle-icon-theme
   git clone https://github.com/vinceliuice/Tela-circle-icon-theme $HOME/.config/nyarch/Tela-circle-icon-theme
 }
 
@@ -94,23 +96,31 @@ configure_neofetch() {
 
   # Install new fastfetch files
   get_tarball
-  cp -rf ${TMP_FOLDER}/NyarchLinux/Gnome/etc/skel/.config/fastfetch $HOME/.config
+  cp -rf ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/skel/.config/fastfetch $HOME/.config
 }
 
 download_wallpapers() {
-  cd ${TMP_FOLDER}
-  wget ${RELEASE_LINK}/wallpaper.tar.gz
-  tar -xvf wallpaper.tar.gz
-  cd wallpaper 
+  local file_path=${TMP_FOLDER}/wallpaper
+  local url=${RELEASE_LINK}/wallpaper.tar.gz
+
+  mkdir -p $file_path
+  wget -q -O "$file_path/wallpaper.tar.gz" "$url"
+  cd $file_path
+  tar -zxf $file_path/wallpaper.tar.gz
   bash install.sh
 }
 
 # TODO CONTINUE
 download_icons() {
-  cd ${TMP_FOLDER} 
-  wget ${RELEASE_LINK}/icons.tar.gz
-  tar -xvf icons.tar.gz
-  cp -rf Tela-circle-MaterialYou $HOME/.local/share/icons/Tela-circle-MaterialYou
+  local file_path=${TMP_FOLDER}/icons
+  local url=${RELEASE_LINK}/icons.tar.gz
+
+  mkdir -p $file_path
+  mkdir -p $HOME/.local/share/icons/Tela-circle-MaterialYou
+  wget -q -O "$file_path/icons.tar.gz" "$url"
+  cd $file_path
+  tar -zxf $file_path/icons.tar.gz
+  cp -rf Tela-circle-MaterialYou*/* $HOME/.local/share/icons/Tela-circle-MaterialYou
 }
 
 set_themes() {
@@ -130,15 +140,14 @@ set_themes() {
   fi
 
   get_tarball
-  cp -rf ${TMP_FOLDER}/NyarchLinux/Gnome/etc/skel/.local/share/themes $HOME/.local/share
+  cp -rf ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/skel/.local/share/themes $HOME/.local/share
   # Set GTK4 and GTK3 themes
-  cp -rf ${TMP_FOLDER}/NyarchLinux/Gnome/etc/skel/.config/gtk-3.0 $HOME/.config
-  cp -rf ${TMP_FOLDER}/NyarchLinux/Gnome/etc/skel/.config/gtk-4.0 $HOME/.config
+  cp -rf ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/skel/.config/gtk-3.0 $HOME/.config
+  cp -rf ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/skel/.config/gtk-4.0 $HOME/.config
 }
 
 configure_kitty (){
   mkdir -p $HOME/.config/kitty
-
   if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
     echo "Backup old kitty.conf to kitty-backup-$DATE_TODAY"
     mv "$HOME/.config/kitty/kitty.conf" "$HOME/.config/kitty/kitty-backup-$DATE_TODAY.conf"
@@ -157,6 +166,7 @@ flatpak_overrides() {
 install_flatpaks() {
   # Add flathub
   flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  flatpak remote-modify --enable flathub
   # Themes
   flatpak install org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark
   # Komikku
@@ -180,32 +190,32 @@ install_flatpaks() {
 install_nyarch_apps() {
   # Install latest release of CatgirlDownloader through flatpak bundle
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/catgirldownloader/releases/latest/download/catgirldownloader.flatpak 
+  wget https://github.com/NyarchLinux/CatgirlDownloader/releases/latest/download/catgirldownloader.flatpak
   flatpak install catgirldownloader.flatpak
 
   # Install latest release of NyarchWizard through flatpak bundle
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/nyarchwizard/releases/latest/download/wizard.flatpak 
+  wget https://github.com/NyarchLinux/NyarchWizard/releases/latest/download/wizard.flatpak
   flatpak install wizard.flatpak
 
   # Install latest release of NyarchTour through flatpak bundle
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/nyarchtour/releases/latest/download/nyarchtour.flatpak 
+  wget https://github.com/NyarchLinux/NyarchTour/releases/latest/download/nyarchtour.flatpak
   flatpak install nyarchtour.flatpak
 
   # Install latest release of NyarchCustomize
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/nyarchcustomize/releases/latest/download/nyarchcustomize.flatpak 
+  wget https://github.com/NyarchLinux/NyarchCustomize/releases/latest/download/nyarchcustomize.flatpak
   flatpak install nyarchcustomize.flatpak
  
   # Install Nyarch Scripts
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/nyarchscript/releases/latest/download/nyarchscript.flatpak
+  wget https://github.com/NyarchLinux/NyarchScript/releases/latest/download/nyarchscript.flatpak
   flatpak install nyarchscript.flatpak
 
   # Install Waifu Downloader
   cd ${TMP_FOLDER} 
-  wget https://github.com/nyarchlinux/waifu-downloader/releases/latest/download/waifudownloader.flatpak
+  wget https://github.com/NyarchLinux/WaifuDownloader/releases/latest/download/waifudownloader.flatpak
   flatpak install waifudownloader.flatpak
   
 }
@@ -213,16 +223,16 @@ install_nyarch_apps() {
 install_nyarch_assistant() {
   # Install Nyarch Assistant
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/nyarchassistant/releases/latest/download/nyarchassistant.flatpak
+  wget https://github.com/NyarchLinux/NyarchAssistant/releases/latest/download/nyarchassistant.flatpak
   flatpak install nyarchassistant.flatpak
 }
 
 install_nyarch_updater() {
   # Install Nyarch Updater
   cd ${TMP_FOLDER}
-  wget https://github.com/nyarchlinux/nyarchupdater/releases/latest/download/nyarchupdater.flatpak
+  wget https://github.com/NyarchLinux/NyarchUpdater/releases/latest/download/nyarchupdater.flatpak
   flatpak install nyarchupdater.flatpak
-  sudo bash -c 'echo 241104 > /version'
+  sudo bash -c 'echo 20250801 > /version'
 }
 
 configure_gsettings() {
@@ -232,11 +242,13 @@ configure_gsettings() {
   cd ${TMP_FOLDER}
   # Download default settings
   get_tarball
-  cd ${TMP_FOLDER}/NyarchLinux/Gnome/etc/dconf/db/local.d
+  cd ${TMP_FOLDER}/NyarchLinuxComp/Gnome/etc/dconf/db/local.d
   # Load settings
   dconf load / < 06-extensions  # Load extensions settings
   dconf load / < 02-interface  # Load theme settings
   dconf load / < 04-wmpreferences  # Add minimize button
+  sed -i '/picture-uri=/d' ./03-background
+  sed -i '/picture-uri-dark=/d' ./03-background
   dconf load / < 03-background  # Set gnome terminal and background settings
 }
 
@@ -249,6 +261,7 @@ echo 'fi' >> ~/.bashrc
 
 ## EXECUTION PART
 
+rm -rf $TMP_FOLDER/*
 mkdir -p $TMP_FOLDER
 check_gnome_version
 check_gnome_is_running
